@@ -5,6 +5,7 @@ import json
 import time
 import requests
 from config import OPENROUTER_API_KEY
+from db import create_database, insert_into_db
 
 # Fix Windows console encoding for emoji/unicode
 try:
@@ -87,6 +88,9 @@ Article:
 
 
 def process_extractions():
+    # Ensure DB and table exist before doing anything
+    create_database()
+
     if not os.path.exists(CSV_FILE):
         print("❌ CSV not found:", CSV_FILE)
         return
@@ -151,6 +155,8 @@ def process_extractions():
             processed += 1
             updated = True
             print(f"  ✅ Extracted: {result}")
+            # Insert into SQLite database (skips silently if already exists)
+            insert_into_db(row)
         else:
             print(f"  ❌ Extraction failed for row {i+1}")
 

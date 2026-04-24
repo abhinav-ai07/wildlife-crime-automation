@@ -87,13 +87,9 @@ def process_articles():
         current_status = row.get('status', '').strip()
         current_content = row.get('content', '').strip()
 
-        # Skip already-fetched rows
-        if current_status == 'content_fetched' and len(current_content) > 100:
-            print(f"[skip] Row {i+1}: already fetched ({len(current_content)} chars)")
-            continue
-
-        # Only process rows that passed filter (status='new' or not 'irrelevant')
-        if current_status == 'irrelevant':
+        # Skip already processed rows: status must be "new" and content must be empty
+        if current_status != 'new' or current_content:
+            print(f"[skip] Row {i+1}: Skipping already processed row (status={current_status})")
             continue
 
         google_link = row.get('link', '').strip()
@@ -101,7 +97,7 @@ def process_articles():
             print(f"[skip] Row {i+1}: no link")
             continue
 
-        print(f"\n[*] Row {i+1}: Resolving Google News URL...")
+        print(f"\n[*] Row {i+1}: Processing new row...")
         print(f"    Source: {google_link[:80]}")
 
         real_url = decode_google_news_url(google_link)
