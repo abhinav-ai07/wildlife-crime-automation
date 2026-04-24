@@ -3,6 +3,12 @@ import sys
 import time
 from datetime import datetime
 
+# Fix Windows console encoding for emoji/unicode
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except AttributeError:
+    pass
+
 # Import modules
 try:
     from collector import run_collector
@@ -19,16 +25,26 @@ def run_pipeline():
     """
     Orchestrates the full wildlife crime data pipeline.
     """
-    # 1. Safety: Prevent simultaneous runs
+    # 1. Safety: Prevent simultaneous runs & Handle stale lock
     if os.path.exists(LOCK_FILE):
-        print(f"[{datetime.now()}] ⚠️ Pipeline already running (lock file found).")
-        print("If you are sure it is not running, delete 'pipeline.lock' and try again.")
-        return
+        file_age_seconds = time.time() - os.path.getmtime(LOCK_FILE)
+        if file_age_seconds > 600:  # 10 minutes
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Removing stale lock file (older than 10 mins).")
+            try:
+                os.remove(LOCK_FILE)
+            except Exception as e:
+                print(f"❌ Failed to remove stale lock: {e}")
+                return
+        else:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Pipeline already running (lock file found).")
+            print("If you are sure it is not running, delete 'pipeline.lock' and try again.")
+            return
 
     try:
         # Create lock file
         with open(LOCK_FILE, "w") as f:
             f.write(str(os.getpid()))
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔒 Lock acquired.")
 
         start_time = datetime.now()
         print(f"\n{'='*60}")
@@ -67,7 +83,11 @@ def run_pipeline():
     finally:
         # Always remove lock file
         if os.path.exists(LOCK_FILE):
-            os.remove(LOCK_FILE)
+            try:
+                os.remove(LOCK_FILE)
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔓 Lock released.")
+            except Exception as e:
+                print(f"❌ Error releasing lock: {e}")
 
 if __name__ == "__main__":
     run_pipeline()
