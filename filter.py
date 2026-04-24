@@ -59,6 +59,9 @@ def update_relevance():
             print("❌ CSV is empty or corrupted")
             return
 
+        # Capture ALL fieldnames so we don't drop columns like 'content'
+        all_fieldnames = list(reader.fieldnames)
+
         for row in reader:
             total += 1
 
@@ -87,11 +90,12 @@ def update_relevance():
 
             updated_rows.append(row)
 
-    # ✅ Write updated data back
+    # ✅ Write updated data back — preserve ALL columns from original fieldnames
     with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
             file,
-            fieldnames=["title", "link", "published", "status"]
+            fieldnames=all_fieldnames,
+            extrasaction='ignore'
         )
 
         writer.writeheader()

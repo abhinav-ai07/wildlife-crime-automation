@@ -5,131 +5,145 @@ import requests
 from bs4 import BeautifulSoup
 import urllib3
 
-# Suppress insecure request warnings if any
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 CSV_FILE = 'data/raw_articles.csv'
 FIELDNAMES = ['title', 'link', 'published', 'status', 'content']
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept-Language': 'en-US,en;q=0.9',
 }
+LIMIT = 3
 
-def resolve_google_news_url(google_url):
-    """Resolves the real article URL from a Google News RSS link."""
+
+def decode_google_news_url(google_url):
+    """
+    Attempts to get the real article URL from a Google News link using googlenewsdecoder.
+    """
     try:
-        response = requests.get(google_url, headers=HEADERS, allow_redirects=True, timeout=5)
-        response.raise_for_status()
-        url = response.url
-        if 'news.google.com' in url:
-            print(f"[-] URL still points to Google News, skipping: {url}")
-            return None
-        return url
-    except requests.exceptions.Timeout:
-        print("[-] Timeout resolving URL.")
-        return None
+        from googlenewsdecoder import new_decoderv1
+        res = new_decoderv1(google_url)
+        if res.get('status') and res.get('decoded_url'):
+            candidate = res['decoded_url']
+            if 'news.google.com' not in candidate and candidate.startswith('http'):
+                return candidate
+            else:
+                print(f"  [skip] Decoded URL still contains news.google.com or is invalid: {candidate}")
+    except ImportError:
+        print("  [-] googlenewsdecoder not installed. Please run: pip install googlenewsdecoder")
     except Exception as e:
-        print(f"[-] Failed to resolve URL: {e}")
-        return None
+        print(f"  [-] Decode failed: {e}")
 
-def fetch_and_extract_content(article_url):
-    """Fetches the HTML of the article and extracts text from <p> tags."""
+    print(f"  [-] Could not resolve URL, still google: {google_url[:80]}")
+    return None
+
+
+def fetch_content(url):
+    """Fetches article HTML and extracts paragraph text."""
     try:
-        response = requests.get(article_url, headers=HEADERS, timeout=5, verify=False)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
+        resp = requests.get(url, headers=HEADERS, timeout=10, verify=False, allow_redirects=True)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, 'html.parser')
+
+        # Remove script/style noise
+        for tag in soup(['script', 'style', 'nav', 'footer', 'header']):
+            tag.decompose()
+
         paragraphs = soup.find_all('p')
-        
-        # Join all paragraph text, stripping extra whitespace
-        text_content = '\n'.join([p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True)])
-        return text_content
+        text = '\n'.join(p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 30)
+        return text
     except requests.exceptions.Timeout:
-        print("[-] Timeout fetching content.")
+        print("  [-] Timeout fetching content.")
         return None
     except Exception as e:
-        print(f"[-] Failed to fetch/extract content: {e}")
+        print(f"  [-] Fetch/extract error: {e}")
         return None
+
 
 def process_articles():
     if not os.path.exists(CSV_FILE):
-        print(f"[!] {CSV_FILE} not found. Please ensure the file exists.")
+        print(f"[!] {CSV_FILE} not found.")
         return
 
-    # Read existing articles
     articles = []
     with open(CSV_FILE, mode='r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
-        actual_fieldnames = list(reader.fieldnames) if reader.fieldnames else FIELDNAMES
+        fieldnames = list(reader.fieldnames) if reader.fieldnames else FIELDNAMES[:]
         for row in reader:
             articles.append(row)
 
-    if 'status' not in actual_fieldnames:
-        actual_fieldnames.append('status')
-    if 'content' not in actual_fieldnames:
-        actual_fieldnames.append('content')
+    # Ensure columns exist
+    for col in ['status', 'content']:
+        if col not in fieldnames:
+            fieldnames.append(col)
 
-    # Process each article
     processed_count = 0
-    updated = False
-    
+
     for i, row in enumerate(articles):
-        # 1. Process ONLY 3 articles per run
-        if processed_count >= 3:
-            print("[+] Limit of 3 valid articles reached. Stopping.")
+        if processed_count >= LIMIT:
+            print(f"\n[+] Limit of {LIMIT} articles reached. Stopping.")
             break
-            
-        # Avoid reprocessing
-        if row.get('status') == 'content_fetched' and row.get('content') and len(row.get('content')) > 100:
-            continue
-            
-        google_link = row.get('link')
-        if not google_link:
+
+        current_status = row.get('status', '').strip()
+        current_content = row.get('content', '').strip()
+
+        # Skip already-fetched rows
+        if current_status == 'content_fetched' and len(current_content) > 100:
+            print(f"[skip] Row {i+1}: already fetched ({len(current_content)} chars)")
             continue
 
-        print(f"\n[*] Processing row {i+1}...")
-        
-        # 2. Convert Google News RSS links into real URLs
-        real_url = resolve_google_news_url(google_link)
+        # Only process rows that passed filter (status='new' or not 'irrelevant')
+        if current_status == 'irrelevant':
+            continue
+
+        google_link = row.get('link', '').strip()
+        if not google_link:
+            print(f"[skip] Row {i+1}: no link")
+            continue
+
+        print(f"\n[*] Row {i+1}: Resolving Google News URL...")
+        print(f"    Source: {google_link[:80]}")
+
+        real_url = decode_google_news_url(google_link)
         if not real_url:
             row['status'] = 'failed_resolve'
+            print(f"  [skip] Marked as failed_resolve - skip reason: unable to resolve true URL")
             continue
-            
-        print(f"[+] Real URL: {real_url}")
-        
-        # 3 & 4. Fetch HTML and extract text
-        content = fetch_and_extract_content(real_url)
-        
-        if content:
-            content_length = len(content)
-            print(f"[+] Content length: {content_length}")
-            
-            # 5. Ensure extracted content is NOT empty (length > 100)
-            if content_length > 100:
-                row['content'] = content
-                row['status'] = 'content_fetched'
-                updated = True
-                processed_count += 1
-            else:
-                row['status'] = 'content_too_short'
-                print("[-] Content too short, rejecting.")
+
+        if 'news.google.com' in real_url:
+            row['status'] = 'failed_resolve'
+            print(f"  [skip] Marked as failed_resolve - skip reason: resolved URL still contains news.google.com")
+            continue
+
+        print(f"  [+] Real URL: {real_url}")
+        content = fetch_content(real_url)
+
+        if content and len(content) > 100:
+            row['content'] = content
+            row['status'] = 'content_fetched'
+            processed_count += 1
+            print(f"  [+] Content saved: {len(content)} chars")
+        elif content:
+            row['status'] = 'content_too_short'
+            print(f"  [skip] Content too short ({len(content)} chars) - skip reason: below 100 chars")
         else:
             row['status'] = 'failed_extract'
-        
-        # Delay to prevent rate-limiting
-        time.sleep(1)
+            print(f"  [skip] No content extracted - skip reason: failed to extract usable text from <p> tags")
 
-    # Update CSV correctly
-    if updated or len(articles) > 0:
-        # Ensure 'status' and 'content' keys exist for DictWriter consistency
-        for row in articles:
-            row.setdefault('status', '')
-            row.setdefault('content', '')
+        time.sleep(1.5)
 
-        with open(CSV_FILE, mode='w', encoding='utf-8', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=actual_fieldnames)
-            writer.writeheader()
-            writer.writerows(articles)
-        print("\n[+] CSV updated successfully.")
+    # Write back
+    for row in articles:
+        row.setdefault('status', '')
+        row.setdefault('content', '')
+
+    with open(CSV_FILE, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(articles)
+
+    print(f"\n[+] CSV updated. Content fetched for {processed_count} article(s).")
+
 
 if __name__ == '__main__':
     process_articles()
