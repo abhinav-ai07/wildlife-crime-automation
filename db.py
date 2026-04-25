@@ -93,6 +93,20 @@ def insert_into_db(row):
         conn.close()
 
 
+def fetch_recent(limit=20):
+    """Return the latest N rows from the crimes table."""
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM crimes ORDER BY id DESC LIMIT ?", (limit,))
+        return [dict(r) for r in cursor.fetchall()]
+    except Exception as e:
+        print(f"[DB] Error fetching recent records: {e}")
+        return []
+    finally:
+        conn.close()
+
+
 def fetch_all():
     """Return all rows from the crimes table."""
     conn = get_connection()

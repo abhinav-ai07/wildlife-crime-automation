@@ -1,0 +1,288 @@
+/* --- Premium Wildlife Crime Intelligence Design System (High Contrast Visuals) --- */
+:root {
+    --primary-gradient: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+    --accent-gradient: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);
+    --dark-bg: #0f172a;
+    --text-main: #1d1d1f;
+    --text-light: #ffffff;
+    --text-soft: #444444;
+    --white: #ffffff;
+    --nav-bg: rgba(15, 23, 42, 0.9);
+    --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --border-radius: 24px;
+    --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Global Reset & Typography --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+html {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: 70px; /* Account for sticky header */
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-light);
+    line-height: 1.6;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3 {
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+}
+
+/* --- Immersive Header --- */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 90px;
+    background: transparent;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+nav.scrolled {
+    height: 70px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.nav-content {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 50px;
+    align-items: center;
+}
+
+.logo {
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-left: 40px;
+    font-weight: 600;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: #66bb6a;
+}
+
+/* --- Parallax Sections --- */
+.hero, #about, #action, #data, #stats {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 20px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Parallax */
+    scroll-snap-align: start; /* Sync scroll snap */
+    scroll-snap-stop: always;
+}
+
+/* Hero - Tiger */
+.hero {
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('wildlife_hero_bg.png');
+}
+
+/* About - Elephant (Fixed Visibility) */
+#about {
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('wildlife_about_bg.png');
+    color: white;
+}
+
+/* Action - Leopard */
+#action {
+    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('wildlife_action_bg.png');
+    color: white;
+}
+
+/* News/Data - Rhino (NEW) */
+#data {
+    background-image: linear-gradient(rgba(240,249,255,0.9), rgba(240,249,255,0.95)), url('wildlife_news_bg.png');
+    color: var(--text-main);
+}
+
+/* Stats - Birds (Fixed Visibility) */
+#stats {
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('wildlife_stats_bg.png');
+    color: white;
+}
+
+/* --- Section Content --- */
+.section-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    z-index: 10;
+}
+
+.section-title {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    margin-bottom: 25px;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#data .section-title {
+    color: var(--text-main);
+    text-shadow: none;
+}
+
+.section-subtitle {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    max-width: 800px;
+    margin: 0 auto 60px;
+    font-weight: 400;
+}
+
+/* --- Buttons --- */
+.hero-btn, .run-btn {
+    padding: 22px 50px;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    border-radius: 60px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 15px 40px rgba(46, 125, 50, 0.4);
+    text-transform: uppercase;
+}
+
+.hero-btn:hover, .run-btn:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 25px 50px rgba(46, 125, 50, 0.6);
+}
+
+.pipeline-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 80px 40px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 30px 100px rgba(0,0,0,0.5);
+}
+
+/* --- Cards --- */
+.data-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 40px;
+}
+
+.data-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 45px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.03);
+    text-align: left;
+    color: var(--text-main);
+}
+
+.data-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+}
+
+.tag {
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tag-crime { background: #fee2e2; color: #991b1b; }
+.tag-species { background: #dcfce7; color: #166534; }
+.tag-location { background: #e0f2fe; color: #075985; }
+
+/* --- Stats --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 50px;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    padding: 60px 40px;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-item h2 {
+    font-size: 5rem;
+    color: #66bb6a;
+}
+
+.stat-item p {
+    color: white;
+    font-weight: 600;
+}
+
+/* --- Reveal --- */
+.reveal {
+    opacity: 0;
+    transform: translateY(80px);
+    transition: opacity 1.4s var(--transition), transform 1.4s var(--transition);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@media (max-width: 992px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .hero, #about, #action, #data, #stats { padding: 100px 20px; }
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wildlife Crime Intelligence System | AI Tracking</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-content">
+            <div class="logo">Wildlife Intelligence</div>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#action">Control</a>
+                <a href="#data">Intelligence</a>
+                <a href="#stats">Stats</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Wildlife Crime Intelligence System</h1>
+        <p>Real-time tracking and analysis of wildlife crimes using advanced AI orchestration and global news intelligence.</p>
+        <button class="hero-btn" onclick="scrollToSection('data')">Fetch Latest Data</button>
+        <div class="scroll-indicator">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+            </svg>
+        </div>
+    </header>
+
+    <section id="about" class="about reveal">
+        <div class="section-container">
+            <h2 class="section-title">Intelligence Evolution</h2>
+            <p class="section-subtitle">Our AI-driven pipeline orchestrates data collection across the digital landscape, transforming raw information into actionable intelligence for global wildlife protection.</p>
+        </div>
+    </section>
+
+    <section id="action" class="action reveal">
+        <div class="section-container">
+            <h2 class="section-title">System Orchestrator</h2>
+            <p class="section-subtitle">The Control Center allows manual triggering of the intelligence extraction engine. Modern security protocols ensure each run is executed within safe parameters.</p>
+            <div class="pipeline-card">
+                <h3>Global Extraction Engine</h3>
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 30px;">Initialize the collection, filtering, and extraction cycle. Status is updated in real-time below.</p>
+                <button id="runPipelineBtn" class="run-btn">Run Intelligence Pipeline</button>
+                <div class="status-container">
+                    <div id="spinner" class="spinner"></div>
+                    <span id="statusMessage">System Idle</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="data" class="reveal">
+        <div class="section-container">
+            <h2 class="section-title">Latest Intelligence</h2>
+            <p class="section-subtitle">Real-time reports extracted from verified global news sources using advanced natural language processing.</p>
+            <div id="dataContainer" class="data-container">
+                <div style="grid-column: 1/-1; text-align: center; padding: 100px;">
+                    <p>Fetching intelligence data...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="stats" class="reveal">
+        <div class="section-container">
+            <h2 class="section-title">Impact Metrics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h2 id="statTotal">0</h2>
+                    <p>Total Incidents</p>
+                </div>
+                <div class="stat-item">
+                    <h2 id="statSpecies">0</h2>
+                    <p>Species Tracked</p>
+                </div>
+                <div class="stat-item">
+                    <h2 id="statLocations">0</h2>
+                    <p>Active Hotspots</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="padding: 60px 20px; text-align: center; color: var(--text-secondary); border-top: 1px solid rgba(0,0,0,0.05);">
+        <p>&copy; 2026 Wildlife Crime Intelligence Project. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
